@@ -39,17 +39,7 @@ router.route('/users/register')
 
   // post in users api
   .get(passport.authenticate('facebook'), function(req, res) {
-    var user = new User();
-    Object.assign(user, req.body);
-
-    // save and handle errors
-    user.save(function(err) {
-      if(err) {
-        res.send(err);
-      }
-
-      res.json({ message: 'User created' });
-    });
+    res.json({ message: 'User created' });
   })
 ; // end users api
 
