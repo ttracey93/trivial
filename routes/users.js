@@ -8,12 +8,39 @@ mongoose.connect('mongodb://trivial:admin@ds047612.mongolab.com:47612/trivial');
 // models
 var User = require('../models/user');
 
-router.route('/users')
+// passport
+var passport = require('passport');
+var FacebookStrategy = require('passport-facebook');
+
+passport.use(new FacebookStrategy({
+    clientID: '1625346341083596',
+    clientSecret: '3cbcdc85cc8cf9641b7af6bdb304d446',
+    callbackURL: "http://localhost:3000/api/facebook/callback",
+    enableProof: false
+  },
+  function(accessToken, refreshToken, profile, done) {
+    User.findOrCreate({ facebookId: profile.id }, function (err, user) {
+      return done(err, user);
+    });
+  }
+));
+
+router.route('/facebook/callback')
+  .get(function(req, res) {
+    console.log('get on fb callback');
+  })
+
+  .post(function(req, res) {
+    console.log('post on fb callback');
+  })
+;
+
+router.route('/users/register')
 
   // post in users api
-  .post(function(req, res) {
+  .get(passport.authenticate('facebook'), function(req, res) {
     var user = new User();
-    user.username = req.body.username;
+    Object.assign(user, req.body);
 
     // save and handle errors
     user.save(function(err) {
@@ -24,62 +51,6 @@ router.route('/users')
       res.json({ message: 'User created' });
     });
   })
-
-  // get all users
-  .get(function(req, res) {
-    User.find(function(err, users) {
-      if(err) {
-        res.send(err);
-      }
-
-      res.json(users);
-    });
-  })
 ; // end users api
-
-// users by id
-router.route('/users/:user_id')
-
-  // get a user by their id
-  .get(function(req, res) {
-    User.findById(req.params.user_id, function(err, user) {
-      if(err) {
-        res.send(err);
-      }
-
-      res.json(user);
-    });
-  })
-
-  // update a user
-  .put(function(req, res) {
-    User.findById(req.params.user_id, function(err, user) {
-      if(err) {
-        res.send(err);
-      }
-
-      user.username = req.body.username;
-
-      user.save(function(err) {
-        if(err) {
-          res.send(err);
-        }
-
-        res.json({ message: 'User updated' });
-      });
-    });
-  })
-
-  //delete a user
-  .delete(function(req, res) {
-    User.remove({ _id: req.params.user_id }, function(err, user) {
-      if(err) {
-        res.send(err);
-      }
-
-      res.json({ message: 'User deleted' });
-    });
-  })
-; // end users by id
 
 module.exports = router;
