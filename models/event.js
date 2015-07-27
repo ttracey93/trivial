@@ -1,8 +1,8 @@
-// host mongoose model
+// event mongoose model
 var mongoose  = require('mongoose');
 var Schema    = mongoose.Schema;
 
-var HostSchema = new Schema({
+var EventSchema = new Schema({
   hostname: String,
   email: String,
   password: String,
@@ -11,4 +11,4 @@ var HostSchema = new Schema({
   bannerImageId: String
 });
 
-module.exports = mongoose.model('Host', HostSchema);
+module.exports = mongoose.model('Event', EventSchema);

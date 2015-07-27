@@ -1,10 +1,6 @@
 var express = require('express');
 var router = express.Router();
 
-// database connection
-var mongoose   = require('mongoose');       // pull in mongodb orm
-mongoose.connect('mongodb://trivial:admin@ds047612.mongolab.com:47612/trivial');
-
 // redis connection
 var redis = require("redis");
 var uuid = require('node-uuid'); // for generating GUIDs as tokens
@@ -68,7 +64,14 @@ router.route('/hosts/login')
       }
 
       if(hosts.length < 1) {
-        res.status(404).json({ error: 'User does not exist' });
+        Host.find().or([{ 'hostname': req.body.hostname }, { 'email': req.body.email }]).exec(function(err, hosts) {
+          if(hosts.length < 1) {
+            res.status(404).json({ error: 'User does not exist' });
+          }
+          else {
+            res.status(401).json({ error: 'Invalid password' });
+          }
+        });
       }
       else if(hosts.length > 1) {
         res.status(500).json({ error: 'Multiple users. Please contact support' });
@@ -84,7 +87,7 @@ router.route('/hosts/login')
           }
           else {
             token = uuid.v4(); // generates a new (random) session token. use v1 for time-based seed
-            res.json({ message: 'token created', 'token': token });
+            res.status(201).json({ message: 'token created', 'token': token });
 
             // set session token and set expire
             client.set(host.hostname, token);
