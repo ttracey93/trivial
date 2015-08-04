@@ -5,7 +5,7 @@ var Schema    = mongoose.Schema;
 var HostSchema = new Schema({
   hostname: String,
   email: String,
-  password: String,
+  password: { type: String, select: false },
   url: String,
   profileImageId: String,
   bannerImageId: String

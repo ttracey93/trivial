@@ -35,17 +35,46 @@ router.route('/hosts/register')
 
           var token = uuid.v4(); // generates a new (random) session token. use v1 for time-based seed
 
-          res.status(201).json({ message: 'Host account created', 'token': token });
+          res.status(201).json({ message: 'Host account created', 'token': token, 'host': host });
 
           // set session token and set expire
           client.set(host.hostname, token);
-          client.expire(host.hostname, expireTime); // expire session in {expireTime} minutes
+          client.expire(host.hostname, expireTime); // expire session in {expireTime}
 
-          console.log('client info set');
+          client.hmset(token, host);
+          client.expire(token, expireTime);
         });
       }
       else {
-        res.status(409).send({ error: 'Host already exists', 'hosts': hosts });
+        var errors = [];
+        var hostError = 'Hostname already in use';
+        var emailError = 'Email already in use';
+        var urlError = 'Url already in use';
+
+        hosts.forEach(function(host) {
+          if(host.hostname == req.body.hostname) {
+            if(errors.indexOf(hostError) < 0) {
+              errors.push(hostError);
+            }
+          }
+
+          if(host.email == req.body.email) {
+            if(errors.indexOf(emailError) < 0) {
+              errors.push(emailError);
+            }
+          }
+
+          if(host.url == req.body.url) {
+            if(errors.indexOf(urlError) < 0) {
+              errors.push(urlError);
+            }
+          }
+        });
+
+        console.log('done');
+        console.log(errors);
+
+        res.status(409).send({ 'errors': errors });
       }
     })
   })
@@ -82,16 +111,21 @@ router.route('/hosts/login')
 
         function respond(err, token) {
           if(token != null) {
-            res.json({ message: 'token exists', 'token': token });
+            res.json({ message: 'token exists', 'token': token, 'host': host });
             client.expire(host.hostname, expireTime); // reset expire to 20 minutes
+
           }
           else {
             token = uuid.v4(); // generates a new (random) session token. use v1 for time-based seed
-            res.status(201).json({ message: 'token created', 'token': token });
+            res.status(201).json({ message: 'token created', 'token': token, 'host': host });
 
             // set session token and set expire
             client.set(host.hostname, token);
             client.expire(host.hostname, expireTime); // expire session in {expireTime} minutes
+
+            // set token to contain host info
+            client.hmset(token, host);
+            client.expire(token, expireTime);
           }
         }
       }
