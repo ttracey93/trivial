@@ -49,12 +49,35 @@ router.route('/events/:id')
   .get(function(req, res, id) {
     res.json(req.targetEvent);
   })
+
+  // update Event
+  .put(function(req, res)) {
+    var event = req.targetEvent;
+    var data = req.body;
+
+    event.name = data.name;
+    event.description = data.description;
+    event.address = data.address;
+    event.city = data.city;
+    event.state = data.state;
+    event.zip = data.zip;
+    event.dateTime = data.date + " " + data.time;
+
+    event.save(function(err) {
+      if(err) {
+        res.status(500).json(err.message);
+      }
+      else {
+        res.status(200).json(event);
+      }
+    });
+  }
 ;
 
 function createEvent(data) {
   var event = new Event();
   event.name = data.name;
-  //event.description = data.description;
+  event.description = data.description;
   event.address = data.address;
   event.city = data.city;
   event.state = data.state;
