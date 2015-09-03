@@ -20,7 +20,7 @@ router.route('/hosts/register')
   // post in users api
   .post(function(req, res) {
     Host.find().
-    or([{ 'hostname': req.body.hostname }, { 'email': req.body.email }, { 'url': req.body.url }])
+    or([{ 'hostname': new RegExp(req.body.hostname, 'i') }, { 'email': new RegExp(req.body.email, 'i') }, { 'url': new RegExp(req.body.url, 'i') }])
     .exec(function(err, hosts) {
       if(err) {
         res.send(err);
@@ -52,27 +52,24 @@ router.route('/hosts/register')
         var urlError = 'Url already in use';
 
         hosts.forEach(function(host) {
-          if(host.hostname == req.body.hostname) {
+          if(host.hostname.toLowerCase() == req.body.hostname.toLowerCase()) {
             if(errors.indexOf(hostError) < 0) {
               errors.push(hostError);
             }
           }
 
-          if(host.email == req.body.email) {
+          if(host.email.toLowerCase() == req.body.email.toLowerCase()) {
             if(errors.indexOf(emailError) < 0) {
               errors.push(emailError);
             }
           }
 
-          if(host.url == req.body.url) {
+          if(host.url.toLowerCase() == req.body.url.toLowerCase()) {
             if(errors.indexOf(urlError) < 0) {
               errors.push(urlError);
             }
           }
         });
-
-        console.log('done');
-        console.log(errors);
 
         res.status(409).send({ 'errors': errors });
       }

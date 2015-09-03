@@ -10,7 +10,8 @@ var EventSchema = new Schema({
   state: String,
   zip: String,
   dateTime: String,
-  owner: { type: Schema.Types.ObjectId, ref: 'Host' }
+  owner: { type: Schema.Types.ObjectId, ref: 'Host' },
+  host: String
 });
 
 module.exports = mongoose.model('Event', EventSchema);
